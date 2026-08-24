@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Seg, SettingRow, Stepper, Switch } from '../components/Ui'
+import { NumField, Seg, SettingRow, Stepper, Switch } from '../components/Ui'
 import { TargetPicker } from '../components/TargetPicker'
 import { IBluetooth, ITrash } from '../components/Icons'
 import { refreshZones, setCues, setSettings, useSettings, resetSettings } from '../lib/store'
@@ -32,15 +32,28 @@ export function Settings({ onPair }: { onPair: () => void }) {
     CueEngine.preview(kind, s, s.targetZone ?? 3)
   }
 
-  const setZoneLo = (i: number, v: number) => {
+  /**
+   * Manual zones are yours, not the formula's. Nothing here consults age, weight
+   * or the estimated max — the only rule enforced is that the bands stay in order
+   * and touch, so there can be no gap for your heart rate to fall into.
+   * Editing the zone 5 ceiling moves your max HR with it, since in manual mode
+   * that ceiling *is* your working max.
+   */
+  const setZoneBound = (i: number, edge: 0 | 1, v: number) => {
     const z = s.zones.map((p) => [...p] as [number, number])
-    const min = i === 0 ? 40 : z[i - 1][0] + 2
-    const max = i === 4 ? s.maxHr - 2 : z[i + 1][0] - 2
-    const val = Math.max(min, Math.min(max, Math.round(v)))
-    z[i][0] = val
-    if (i > 0) z[i - 1][1] = val
-    z[4][1] = s.maxHr
-    setSettings({ zones: z, zoneModel: 'manual' })
+    z[i][edge] = v
+    if (edge === 0 && i > 0) z[i - 1][1] = v
+    if (edge === 1 && i < 4) z[i + 1][0] = v
+    const patch: Partial<typeof s> = { zones: z, zoneModel: 'manual' }
+    if (i === 4 && edge === 1) patch.maxHr = v
+    setSettings(patch)
+  }
+
+  /** How far a given bound is allowed to move before it would cross its neighbour. */
+  const limits = (i: number, edge: 0 | 1) => {
+    const z = s.zones
+    if (edge === 0) return { min: i === 0 ? 30 : z[i - 1][0] + 1, max: z[i][1] - 1 }
+    return { min: z[i][0] + 1, max: i === 4 ? 240 : z[i + 1][1] - 1 }
   }
 
   const exportAll = () => {
@@ -241,11 +254,29 @@ export function Settings({ onPair }: { onPair: () => void }) {
       <SettingRow label="Units" end={<Seg value={s.units} onChange={(v) => setSettings({ units: v })} options={[{ id: 'km', label: 'km' }, { id: 'mi', label: 'mi' }]} />} />
       <SettingRow
         label="Age"
-        end={<Stepper value={s.age} min={10} max={99} onChange={(v) => refreshZones({ age: v, maxHr: estMaxHr(v), lthr: Math.round(estMaxHr(v) * 0.88) })} />}
+        end={
+          <Stepper
+            value={s.age}
+            min={10}
+            max={99}
+            onChange={(v) =>
+              // only re-estimate the max if you never overrode it yourself
+              refreshZones(
+                s.maxHr === estMaxHr(s.age)
+                  ? { age: v, maxHr: estMaxHr(v), lthr: Math.round(estMaxHr(v) * 0.88) }
+                  : { age: v },
+              )
+            }
+          />
+        }
       />
       <SettingRow
         label="Max heart rate"
-        hint={`Estimated ${estMaxHr(s.age)} for age ${s.age}. Override it if you have tested.`}
+        hint={
+          s.zoneModel === 'manual'
+            ? 'Not used — your zones are manual. Kept only for the calorie estimate.'
+            : `Estimated ${estMaxHr(s.age)} for age ${s.age}. Override it if you have tested.`
+        }
         end={<Stepper value={s.maxHr} min={120} max={230} onChange={(v) => refreshZones({ maxHr: v })} />}
       />
       <SettingRow label="Resting heart rate" end={<Stepper value={s.restHr} min={30} max={100} onChange={(v) => refreshZones({ restHr: v })} />} />
@@ -278,19 +309,29 @@ export function Settings({ onPair }: { onPair: () => void }) {
               <div className="bl">{z.blurb}</div>
             </div>
             <div className="bounds">
-              <input
-                type="number"
-                inputMode="numeric"
-                value={s.zones[i]?.[0] ?? 0}
-                onChange={(e) => setZoneLo(i, Number(e.target.value))}
+              <NumField
+                value={s.zones[i][0]}
+                onCommit={(v) => setZoneBound(i, 0, v)}
+                {...limits(i, 0)}
+                label={`${z.short} lower bound`}
               />
               <span className="dim">–</span>
-              <span style={{ width: 34, textAlign: 'center' }}>{i === 4 ? s.maxHr : (s.zones[i + 1]?.[0] ?? s.maxHr)}</span>
+              <NumField
+                value={s.zones[i][1]}
+                onCommit={(v) => setZoneBound(i, 1, v)}
+                {...limits(i, 1)}
+                label={`${z.short} upper bound`}
+              />
             </div>
           </div>
         ))}
       </div>
-      <p className="note">Tap a zone tag to make it the target. Editing a number switches you to manual zones.</p>
+      <p className="note">
+        Tap a zone tag to make it the target. Type either end of a band and press enter — editing any
+        number switches you to <b>Manual</b>, where your numbers are used exactly as entered and age,
+        weight and the estimated max are ignored entirely. Bands stay joined, so moving one end moves
+        its neighbour to match and no heart rate can land in a gap.
+      </p>
 
       <h2 className="section">Recording</h2>
       <SettingRow label="GPS tracking" hint="Off for treadmill and indoor work — heart rate still records." end={<Switch on={s.gps} onChange={(v) => setSettings({ gps: v })} />} />

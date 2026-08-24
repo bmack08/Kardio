@@ -1115,10 +1115,10 @@ button:focus-visible {
 
 .zrow {
   display: grid;
-  grid-template-columns: 46px 1fr auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 11px 13px;
+  gap: 10px;
+  padding: 11px 12px;
   border-radius: var(--r-md);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1160,7 +1160,7 @@ button:focus-visible {
 .zrow .bounds {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
   font-family: var(--font-num);
   font-weight: 800;
   font-size: 15px;
@@ -1169,12 +1169,26 @@ button:focus-visible {
 }
 
 .zrow input {
-  width: 54px;
+  width: 52px;
   text-align: center;
-  padding: 7px 4px;
+  padding: 7px 2px;
   font-family: var(--font-num);
   font-weight: 800;
   font-size: 15px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* the spinners eat the width we need for three digits on a phone */
+.zrow input::-webkit-outer-spin-button,
+.zrow input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.zrow input:focus {
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, var(--surface-2));
 }
 
 /* ---------- sheet ---------- */

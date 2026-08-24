@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { zoneInfo } from '../lib/zones'
 import { IClose } from './Icons'
 
@@ -94,6 +94,62 @@ export function Stepper({
         +
       </button>
     </div>
+  )
+}
+
+/**
+ * A number box you can actually type in. Controlled inputs that clamp on every
+ * keystroke make multi-digit entry impossible — "1" on the way to "145" gets
+ * snapped to the nearest legal value before you reach the 4. So we hold a draft
+ * while focused and only clamp on commit (blur or Enter).
+ */
+export function NumField({
+  value,
+  onCommit,
+  min,
+  max,
+  width = 52,
+  label,
+}: {
+  value: number
+  onCommit: (v: number) => void
+  min: number
+  max: number
+  width?: number
+  label?: string
+}) {
+  const [draft, setDraft] = useState<string | null>(null)
+
+  const commit = () => {
+    const raw = draft
+    setDraft(null)
+    if (raw == null || raw.trim() === '') return
+    const n = Number(raw)
+    if (!Number.isFinite(n)) return
+    onCommit(Math.max(min, Math.min(max, Math.round(n))))
+  }
+
+  return (
+    <input
+      type="number"
+      inputMode="numeric"
+      aria-label={label}
+      style={{ width }}
+      value={draft ?? String(value)}
+      onFocus={(e) => {
+        setDraft(String(value))
+        e.currentTarget.select()
+      }}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur()
+        if (e.key === 'Escape') {
+          setDraft(null)
+          e.currentTarget.blur()
+        }
+      }}
+    />
   )
 }
 
