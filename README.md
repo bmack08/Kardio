@@ -101,15 +101,16 @@ on your phone over the network, use an HTTPS tunnel or just deploy.
 
 ## Deploying
 
-Pushing to `main` runs `.github/workflows/deploy.yml`, which builds and publishes to GitHub
-Pages. Turn Pages on once under **Settings → Pages → Source: GitHub Actions**.
+Live at **https://bmack08.github.io/Kardio/**
 
-The site is served from `/Kardio/`, which is baked in as `base` in `vite.config.ts`. For a
-root-level host (Vercel, Netlify, a custom domain) build with `BASE_PATH=/` instead.
+Pushing to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which
+builds and publishes `dist/` to GitHub Pages. Pages is configured with
+**Settings → Pages → Source: GitHub Actions** — only the compiled bundle is served, never the
+source tree (which is what *Deploy from a branch* would do, and it would fail anyway: the
+committed `index.html` points at `src/main.tsx`, which no browser can execute).
 
-> GitHub Pages on a **private** repository requires a paid GitHub plan. On the free plan
-> either make the repo public or host the built `dist/` somewhere else — the app is fully
-> static, so any host works.
+The site is served from `/Kardio/`, baked in as `base` in `vite.config.ts`. For a root-level
+host (Vercel, Netlify, a custom domain) build with `BASE_PATH=/` instead.
 
 ## Privacy
 
