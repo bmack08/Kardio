@@ -1,0 +1,26 @@
+{
+  "name": "kardio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Eyes-free heart-rate zone training. Run by ear.",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "node scripts/make-icons.mjs && tsc -b && vite build",
+    "preview": "vite preview --host",
+    "icons": "node scripts/make-icons.mjs"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/web-bluetooth": "^0.0.21",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11"
+  }
+}

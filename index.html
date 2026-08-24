@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Kardio</title>
+    <meta name="description" content="Eyes-free heart-rate zone training. Pick a zone, run by ear." />
+
+    <meta name="theme-color" content="#06070a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kardio" />
+
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="./icons/favicon-64.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* first paint, before the bundle lands */
+      html,
+      body {
+        margin: 0;
+        background: #06070a;
+        color: #edf0f7;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+      #boot svg {
+        opacity: 0.9;
+        animation: bp 1.4s ease-in-out infinite;
+      }
+      @keyframes bp {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.55;
+        }
+        22% {
+          transform: scale(1.1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="boot">
+        <svg width="54" height="54" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M1.6 12h4.2l1.6-4.4 3.1 9.2 2.5-7 1.9 4.4 1.3-2.2h6.2"
+            stroke="#38e08a"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
